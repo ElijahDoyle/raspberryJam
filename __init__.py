@@ -11,6 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
+# this class is used for validating credentials or adding users to the database
 class User:
 
 	def __init__(self, username, password):
@@ -21,6 +22,7 @@ class User:
 		self.debug = "test"
 		self.token = None
 
+	# adds a user and hashed password to the database
 	def signUp(self):
 		conn = None
 
@@ -37,6 +39,7 @@ class User:
 			cursor.close()
 			conn.close()
 
+	# updates the authtoken associated with the user in the database
 	def updateID(self, token):
 		self.token = str(token)
 		conn = None
@@ -56,7 +59,7 @@ class User:
 			conn.close()
 			cursor.close()
 
-
+	# Checks whether or not the user exists in the database, and if the password is correcttttttt
 	def isValid(self):
 		query = "SELECT passwordHash FROM users WHERE username = \'" + self.username + "\' Limit 1"
 		conn = None
@@ -78,7 +81,7 @@ class User:
 		return self.valid
 
 
-
+# this function checks if a supplied Authtoken is in the database and returns true if it is
 def checkAuth():
 	publicID = str(request.headers.get("Authentication"))
 	query = "Select * from users where publicID = \'" + publicID + "\'"
@@ -118,8 +121,10 @@ def select_recent_data(datatype, table):
 	finally:
 		conn.close()
 		cursor.close()
+		# it returns a list with the timestamp, and value, so keep that in mind  when handling the output
 		return [timestamp, value]
 
+# this function selects the status of all the components in the database
 def select_all_statuses():
 	query = "Select component, status, time_of_failure from status"
 	conn = None
@@ -139,8 +144,10 @@ def select_all_statuses():
 	finally:
 		conn.close()
 		cursor.close()
+		# remember that data is a dictionary
 		return data
 
+# this function retrieves the current parameters from the database
 def get_parameters():
 	conn = None
 	data = {}
@@ -152,7 +159,7 @@ def get_parameters():
 		parameters = cursor.fetchone()
 
 # fix the output dictionary keys to match the SQL keys !
-
+# also this method of fetching the data is kind of stupid, i should use what i did for the status selection code
 		data["min_temp"] = str(parameters[0])
 		data["max_temp"] = str(parameters[1])
 		data["fert_water_conductivity"] = str(parameters[2])
@@ -164,14 +171,16 @@ def get_parameters():
 	finally:
 		conn.close()
 		cursor.close()
+		# remember that data is a dictionary
 		return data
 
+# this function updates the parameters in the database
 def update_parameters(columns, values):
 	conn = None
 	try:
 		conn = mysql.connector.connect(host= 'localhost', database= 'greenhouse_data', user='root', password='rJ@mJ@r7')
 		cursor = conn.cursor()
-
+		# gonna be honest, I forget how this works, but it does so don't mess with it
 		for i in range(0, len(columns)):
 			temp = ''
 			temp = temp + columns[i]
@@ -190,6 +199,7 @@ def update_parameters(columns, values):
 		else:
 			return "Error"
 
+# this function updates the manual contorl settings in the database
 def update_manual_controls(system, status):
 	conn = None
 	try:
@@ -208,6 +218,7 @@ def update_manual_controls(system, status):
 		cursor.close()
 		return "Updated"
 
+# this function returns the current manual control settings from the database
 def get_manual_controls():
 	conn = None
 	data = {}
@@ -229,15 +240,15 @@ def get_manual_controls():
 		cursor.close()
 		return data
 
-
-# returns False if there has not been a token assigned, or the wrong token is given
+# this function assigns a new authtoken to a user if the supplied password and username are correct
 @app.route("/getTokens", methods = ["POST"])
 def getToken():
 	username = request.form.get("username", None)
 	password = request.form.get("password", None)
 	if username != None and password != None:
-
+		# a temp user object is created
 		currentUser = User(username, password)
+		# if the credentials are valid, a new token is supplied and the database is updataed
 		if currentUser.isValid():
 			token = uuid4()
 			currentUser.updateID(token)
@@ -247,6 +258,7 @@ def getToken():
 	else:
 		return jsonify({"token" : "Failed"})
 
+# this function is used for adding a new user/password to the database
 @app.route("/sendCredentials", methods=["POST"])
 def createUser():
 	username = request.form.get("username", None)
@@ -260,6 +272,7 @@ def createUser():
 	else:
 		return jsonify({"token" : "It didnt work"})
 
+# this was just a function for testing the authentication feature
 @app.route("/authCheck")
 def authCheck():
 	if checkAuth():
@@ -267,10 +280,12 @@ def authCheck():
 	else:
 		return "invalid"
 
+# this is the default route, used for testing if the server is up
 @app.route("/")
 def home():
 	return "<h1>Up and Running! Hi Everyone :)</h1>"
 
+# the endpoint for retrieving all current temperatures
 @app.route("/getCurrentTemperatures", methods = ["GET"])
 def getCurrentTemperatures():
 	if checkAuth():
@@ -283,6 +298,7 @@ def getCurrentTemperatures():
 	else:
 		return jsonify({"message": "string"})
 
+# the endpoint for retrieving the current humidity
 @app.route("/getCurrentHumidity", methods = ["GET"])
 def getCurrentHumidity():
 	if checkAuth():
@@ -291,6 +307,7 @@ def getCurrentHumidity():
 	else:
 		return "Invalid AuthToken"
 
+# the endpoint for retrieving current statuses
 @app.route("/getCurrentStatuses", methods = ["GET"])
 def getCurrentStatuses():
 	if checkAuth():
@@ -324,6 +341,8 @@ def parameters():
 			return jsonify(data)
 	else:
 		return "Invalid AuthToken"
+
+# this endpoint allows manual controls to be changed, or retrieved
 @app.route("/manualControls", methods = ["GET", "POST"])
 def manualControls():
 	if checkAuth():
@@ -336,6 +355,7 @@ def manualControls():
 	else:
 		return "Invalid AuthToken"
 
+# here we actually run the flask application
 if __name__ == "__main__":
 	app.run()
 
