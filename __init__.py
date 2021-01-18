@@ -1,4 +1,8 @@
-from flask import Flask, request, jsonify, session
+# This program is the Flask API for interaction with the greenhouse_data database
+# Its a bit of a mess but it works
+# I need to comment like 90% of it but thats a job for another day -Elijah
+
+from flask import Flask, request, jsonify
 import mysql.connector
 from mysql.connector import Error
 from datetime import datetime
