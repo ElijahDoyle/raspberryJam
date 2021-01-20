@@ -165,6 +165,7 @@ def get_parameters():
 		data["fert_water_conductivity"] = str(parameters[2])
 		data["hydro_duration"] = str(parameters[3])
 		data["hydro_freqency"] = str(parameters[4])
+
 	except Error as e:
 		print(e)
 
@@ -202,21 +203,22 @@ def update_parameters(columns, values):
 # this function updates the manual contorl settings in the database
 def update_manual_controls(system, status):
 	conn = None
+	debug = "nothing?"
 	try:
 		conn = mysql.connector.connect(host='localhost', database='greenhouse_data', user='root', password='rJ@mJ@r7')
 		cursor = conn.cursor()
 
-		query = "UPDATE manual_controls SET" + system + " = " + str(status)
+		query = "UPDATE manual_controls SET status = " + str(status) + " WHERE system = \'" + system + "\'"
 		cursor.execute(query)
-
+		debug = "updataed"
 	except Error as e:
-		print(e)
+		debug = str(e)
 
 	finally:
 		conn.commit()
 		conn.close()
 		cursor.close()
-		return "Updated"
+		return debug
 
 # this function returns the current manual control settings from the database
 def get_manual_controls():
@@ -232,7 +234,11 @@ def get_manual_controls():
 		statuses = cursor.fetchall()
 		data["big_fan"] = (statuses[0][0])
 		data["little_fan"] = (statuses[1][0])
-		data["water"] = (statuses[2][0])
+		data["water_heat"] = (statuses[2][0])
+		data["water_fertilizer"] = (statuses[3][0])
+		data["twoTubs"] = (statuses[4][0])
+		data["calciumFertilizer"] = statuses[5][0]
+		data["fertilizer"] = statuses[6][0]
 	except Error as e:
 		print(e)
 	finally:
@@ -356,7 +362,7 @@ def manualControls():
 	if checkAuth():
 		if request.method == "POST":
 			system = request.form.get("system", None)
-			status = request.form,get("status", None)
+			status = request.form.get("status", None)
 			return update_manual_controls(system, status)
 		if request.method == "GET":
 			return jsonify(get_manual_controls())
