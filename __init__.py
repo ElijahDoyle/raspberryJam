@@ -307,6 +307,14 @@ def getCurrentHumidity():
 	else:
 		return "Invalid AuthToken"
 
+@app.route("/getCurrentConductivity", methods = ["GET"])
+def getElecConductivity():
+	if checkAuth():
+		conductivity = select_recent_data("conductivity", "fertilized_water_conductivity")[1]
+		return jsonify(conductivity=conductivity)
+	else:
+		return "Invalid AuthToken"
+
 # the endpoint for retrieving current statuses
 @app.route("/getCurrentStatuses", methods = ["GET"])
 def getCurrentStatuses():
