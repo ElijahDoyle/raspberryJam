@@ -221,17 +221,14 @@ def get_manual_controls():
 		conn = mysql.connector.connect(host='localhost', database='greenhouse_data', user='root', password='rJ@mJ@r7')
 		cursor = conn.cursor(buffered=True)
 
-		query = "Select status from manual_controls"
+		query = "Select system, status from manual_controls"
 
 		cursor.execute(query)
-		statuses = cursor.fetchall()
-		data["big_fan"] = (statuses[0][0])
-		data["little_fan"] = (statuses[1][0])
-		data["water_heat"] = (statuses[2][0])
-		data["water_fertilizer"] = (statuses[3][0])
-		data["twoTubs"] = (statuses[4][0])
-		data["calciumFertilizer"] = statuses[5][0]
-		data["fertilizer"] = statuses[6][0]
+		row = cursor.fetchone()
+		while row is not None:
+			data[row[0]] = row[1]
+			row = cursor.fetchone()
+
 	except Error as e:
 		print(e)
 	finally:
