@@ -154,17 +154,13 @@ def get_parameters():
 	try:
 		conn = mysql.connector.connect(host='localhost', database='greenhouse_data', user='root', password='rJ@mJ@r7')
 		cursor = conn.cursor()
-		query = "SELECT * FROM parameters"
+		query = "SELECT parameter, value FROM parameters"
 		cursor.execute(query)
-		parameters = cursor.fetchone()
 
-# fix the output dictionary keys to match the SQL keys !
-# also this method of fetching the data is kind of stupid, i should use what i did for the status selection code
-		data["min_temp"] = str(parameters[0])
-		data["max_temp"] = str(parameters[1])
-		data["fert_water_conductivity"] = str(parameters[2])
-		data["hydro_duration"] = str(parameters[3])
-		data["hydro_freqency"] = str(parameters[4])
+		row = cursor.fetchone()
+		while row is not None:
+			data[row[0]] = row[1]
+			row = cursor.fetchone()
 
 	except Error as e:
 		print(e)
