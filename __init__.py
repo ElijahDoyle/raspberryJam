@@ -172,27 +172,24 @@ def get_parameters():
 		return data
 
 # this function updates the parameters in the database
-def update_parameters(columns, values):
+def update_parameters(parameter, value):
 	conn = None
 	try:
 		conn = mysql.connector.connect(host= 'localhost', database= 'greenhouse_data', user='root', password='rJ@mJ@r7')
 		cursor = conn.cursor()
-		# gonna be honest, I forget how this works, but it does so don't mess with it
-		for i in range(0, len(columns)):
-			temp = ''
-			temp = temp + columns[i]
-			query = "UPDATE parameters SET " + temp + " = " + str(values[i])
-			cursor.execute(query)
+
+		query = "UPDATE parameters SET value = " + str(value) + " WHERE parameter = \'" + parameter + "\'"
+		cursor.execute(query)
 
 	except Error as e:
-		print(e)
+		return str(e)
 
 	finally:
 		if conn != None:
 			conn.commit()
 			conn.close()
 			cursor.close()
-			return "Successful"
+			return "successful"
 		else:
 			return "Error"
 
@@ -332,18 +329,11 @@ def parameters():
 	if checkAuth(): #checkAuth()
 		if request.method == 'POST':
 
-		# the request body will have to be formatted very specifically:
-		# Every parameter that wants to be changed will be put in a list defined by the parameters key
-			params = request.form.get("parameters", None)
-		# Every value will be put int a list defined by the values key
-			vals = request.form.get("values")
+		# the parameters I am requesting from the form are plural, but they are just a single value
+			parameter = request.form.get("parameters")
+			value = request.form.get("values")
 
-			if not isinstance(params, list):
-				params = [str(params)]
-				vals = [vals]
-		# the input to update_parameters need to be lists, otherwise the function won't work
-		# even if the input is just of length one, it needs to be in a list
-			return update_parameters(params, vals)
+			return update_parameters(parameter, value)
 
 		elif request.method  == 'GET':
 		# if a get request is done, then json results from the database will be returned.
