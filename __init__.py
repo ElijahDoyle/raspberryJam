@@ -196,16 +196,16 @@ def update_parameters(parameter, value):
 # this function updates the manual contorl settings in the database
 def update_manual_controls(system, status):
 	conn = None
-	debug = "nothing?"
+	debug = "You shouldn't get this message"
 	try:
 		conn = mysql.connector.connect(host='localhost', database='greenhouse_data', user='root', password='rJ@mJ@r7')
 		cursor = conn.cursor()
 
 		query = "UPDATE manual_controls SET status = " + str(status) + " WHERE system = \'" + system + "\'"
 		cursor.execute(query)
-		debug = "updataed"
+		debug = "updated"
 	except Error as e:
-		debug = str(e)
+		debug = "New Error!"
 
 	finally:
 		conn.commit()
