@@ -14,6 +14,7 @@ app = Flask(__name__)
 # this class is used for validating credentials or adding users to the database
 class User:
 
+	# this initializes the user with a password and username
 	def __init__(self, username, password):
 		self.username = username
 		self.password = password
@@ -27,8 +28,10 @@ class User:
 		conn = None
 
 		try:
+			#connects to the database
 			conn = mysql.connector.connect(host='localhost', database='users', user='root', password= "rJ@mJ@r7")
 			cursor = conn.cursor()
+			# this query inserts the username and hasshed password to the database
 			query = "insert into users values (\'" + self.username + "\', \'" + self.passwordHash + "\', NULL)"
 			cursor.execute(query)
 			conn.commit()
@@ -47,6 +50,7 @@ class User:
 		try:
 			conn = mysql.connector.connect(host= 'localhost', database= 'users', user='root', password = "rJ@mJ@r7")
 			cursor = conn.cursor()
+			# updates the publicID (token) of the user
 			query = "update users set publicID = \'" + self.token + "\' where username = \'" + self.username + "\'"
 			cursor.execute(query)
 			conn.commit()
@@ -61,6 +65,7 @@ class User:
 
 	# Checks whether or not the user exists in the database, and if the password is correcttttttt
 	def isValid(self):
+		# this query requests the passwordHash of a given username
 		query = "SELECT passwordHash FROM users WHERE username = \'" + self.username + "\' Limit 1"
 		conn = None
 		try:
@@ -68,6 +73,7 @@ class User:
 			cursor = conn.cursor()
 			cursor.execute(query)
 			data = cursor.fetchone()
+			# This logic checks whether or not the stored password hash matches the given 
 			if data != None and check_password_hash(str(data[0]), self.password):
 				self.valid = True
 			self.debug = self.passwordHash
@@ -135,7 +141,7 @@ def select_all_statuses():
 		cursor.execute(query)
 		row = cursor.fetchone()
 		while row is not None:
-			data[row[0]] = [row[1], row[2]]
+			data[row[0]] = row[1]
 			row = cursor.fetchone()
 
 	except Error as e:
